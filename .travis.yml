@@ -9,6 +9,12 @@ before_script:
 script:
   - cargo +nightly-2018-07-17 fmt -- --check
   - RUST_BACKTRACE=1 cargo test --verbose --all
+deploy:
+  provider: script
+  script: bash docker_push
+  on:
+    branch: docker-test
+    condition: $TRAVIS_OS_NAME = linux
 matrix:
   allow_failures:
     - rust: nightly
