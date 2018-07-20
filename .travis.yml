@@ -1,33 +1,34 @@
 language: rust
 rust:
   - stable
-services:
-  - docker
-#install:
-#  - rustup toolchain install nightly-2018-07-17
-#  - rustup component add rustfmt-preview --toolchain nightly-2018-07-17
-#before_script:
-#  - cargo fetch --verbose
-script:
-  - ls
-#  - cargo +nightly-2018-07-17 fmt -- --check
-#  - RUST_BACKTRACE=1 cargo test --verbose --all
 jobs:
   include:
+    - stage: test
+      name: format
+      install:
+        - rustup toolchain install nightly-2018-07-17
+        - rustup component add rustfmt-preview --toolchain nightly-2018-07-17
+      before_script:
+        - cargo fetch --verbose
+      script:
+        - cargo +nightly-2018-07-17 fmt -- --check
+    - name: osx
+      os: osx
+      script: RUST_BACKTRACE=1 cargo test --verbose --all
+    - name: linux
+      os: linux
+      sudo: required
+      script: RUST_BACKTRACE=1 cargo test --verbose --all
     - stage: deploy
+      sudo: required
+      services:
+        - docker
       deploy:
         provider: script
         script: bash docker_push
         on:
           branch: docker-test
           condition: $TRAVIS_OS_NAME = linux
-matrix:
-  allow_failures:
-    - rust: nightly
-  include:
-    - os: linux
-      sudo: required
-    - os: osx
 notifications:
   webhooks: https://webhooks.gitter.im/e/71bb03cf9abce5b02c43
 cache: cargo
